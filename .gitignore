@@ -1,0 +1,5 @@
+back/
+wandb/
+training.log
+*_model*/
+hebrew_aramaic_dataset/
