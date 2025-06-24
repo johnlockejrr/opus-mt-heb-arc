@@ -86,7 +86,7 @@ class HebrewAramaicTranslator:
             
             # Add special tokens if needed
             special_tokens = {
-                'additional_special_tokens': ['<he>', '<ar>']
+                'additional_special_tokens': ['<he>', '<arc>']
             }
             self.tokenizer.add_special_tokens(special_tokens)
             
@@ -121,15 +121,15 @@ class HebrewAramaicTranslator:
         Preprocess the dataset for training.
         """
         # Determine source and target based on training direction
-        if self.config.get('direction', 'he2ar') == 'he2ar':
+        if self.config.get('direction', 'he2arc') == 'he2arc':
             source_texts = examples['hebrew']
             target_texts = examples['aramaic']
             source_lang = 'he'
-            target_lang = 'ar'
-        else:  # ar2he
+            target_lang = 'arc'
+        else:  # arc2he
             source_texts = examples['aramaic']
             target_texts = examples['hebrew']
-            source_lang = 'ar'
+            source_lang = 'arc'
             target_lang = 'he'
         
         # Add language prefix if specified
@@ -347,7 +347,7 @@ class HebrewAramaicTranslator:
         """
         model_info = {
             'model_name': self.config['model_name'],
-            'direction': self.config.get('direction', 'he2ar'),
+            'direction': self.config.get('direction', 'he2arc'),
             'vocabulary_size': len(self.tokenizer),
             'model_parameters': sum(p.numel() for p in self.model.parameters()),
             'training_config': self.config
@@ -372,7 +372,7 @@ def main():
     parser.add_argument('--model_name', 
                        default='Helsinki-NLP/opus-mt-mul-en',
                        help='Pre-trained model to fine-tune')
-    parser.add_argument('--direction', choices=['he2ar', 'ar2he'], default='he2ar',
+    parser.add_argument('--direction', choices=['he2arc', 'arc2he'], default='he2arc',
                        help='Translation direction')
     
     # Training arguments

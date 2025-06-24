@@ -67,10 +67,10 @@ class HebrewAramaicTranslator:
         
         # Add language prefix if the model was trained with it
         if self.model_info.get('training_config', {}).get('use_language_prefix', True):
-            if direction == 'he2ar':
+            if direction == 'he2arc':
                 input_text = f"<he> {text}"
-            else:  # ar2he
-                input_text = f"<ar> {text}"
+            else:  # arc2he
+                input_text = f"<arc> {text}"
         else:
             input_text = text
         

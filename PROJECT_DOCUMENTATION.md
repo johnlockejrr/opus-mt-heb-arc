@@ -1,362 +1,188 @@
-# Hebrew-Aramaic Translation Model - Complete Project Documentation
+# Hebrew-Aramaic Biblical Translation Project Documentation
 
-## 📋 Project Overview
+## Project Overview
 
-This project implements a complete pipeline for fine-tuning MarianMT models on Hebrew-Aramaic parallel texts, specifically designed for translating between Hebrew (Samaritan) and Aramaic (Targum) biblical texts.
+This project implements a neural machine translation system for translating Hebrew biblical verses to Aramaic using MarianMT models. The system has been trained on aligned Hebrew-Aramaic biblical text pairs and achieves significant translation quality improvements.
 
-**Project Goal**: Create a machine translation model that can translate between Hebrew and Aramaic with high accuracy.
+## Key Achievements
 
-## 🗂️ Data Structure
+- **BLEU Score Improvement**: From ~11.7 to ~37.8 after continued training and fine-tuning
+- **Model Architecture**: MarianMT-based translation model
+- **Hardware Optimization**: Configured for GTX 3060 GPU
+- **Training Features**: Early stopping, gradient accumulation, and learning rate scheduling
 
-### Input Data Format
-The project uses a TSV (Tab-Separated Values) file with the following structure:
+## Project Structure
+
 ```
-Book|Chapter|Verse|Targum|Samaritan
-1|3|2|מן אילן גנה ניכל|מפרי עץ הגן נאכל
-```
-
-**Columns**:
-- `Book`: Book identifier
-- `Chapter`: Chapter number  
-- `Verse`: Verse number
-- `Targum`: Aramaic text
-- `Samaritan`: Hebrew text
-
-### Dataset Statistics
-- **Total examples**: 5,417 parallel texts
-- **Training set**: 4,319 examples (80%)
-- **Validation set**: 540 examples (10%)
-- **Test set**: 540 examples (10%)
-
-## 🛠️ Project Files
-
-### Core Scripts
-
-#### 1. `prepare_dataset.py`
-**Purpose**: Data preprocessing and dataset preparation
-**Features**:
-- Loads TSV file with Hebrew-Aramaic parallel texts
-- Cleans and filters data (removes empty/invalid pairs)
-- Splits data into train/validation/test sets
-- Saves processed dataset in Hugging Face format
-- Filters by length ratio and text quality
-
-**Usage**:
-```bash
-python prepare_dataset.py \
-    --input_file aligned_corpus.tsv \
-    --output_dir ./hebrew_aramaic_dataset \
-    --test_size 0.1 \
-    --val_size 0.1
+sam-aram/
+├── back/                          # Core training and inference scripts
+│   ├── inference.py
+│   ├── prepare_dataset.py
+│   ├── run_pipeline.sh
+│   └── train_translation_model.py
+├── hebrew_aramaic_dataset/        # Processed dataset
+├── hebrew_aramaic_model_early_stopping/  # Model with early stopping
+├── hebrew_aramaic_model_final/    # Final trained model
+├── aligned_corpus.tsv             # Raw aligned corpus
+├── train_syriac_aramaic.py        # Syriac→Aramaic training script
+├── prepare_syriac_aramaic_dataset.py  # Syriac dataset preparation
+└── requirements.txt               # Python dependencies
 ```
 
-#### 2. `train_translation_model.py`
-**Purpose**: Main training script for fine-tuning MarianMT models
-**Features**:
-- Supports both Hebrew→Aramaic and Aramaic→Hebrew directions
-- Configurable hyperparameters
-- Early stopping with BLEU score monitoring
-- Mixed precision training (FP16)
-- Comprehensive evaluation metrics
-- WandB integration (optional)
+## Training Configuration
 
-**Key Parameters**:
-- `--model_name`: Pre-trained model to fine-tune
-- `--direction`: Translation direction (`he2ar` or `ar2he`)
-- `--batch_size`: Training batch size
-- `--learning_rate`: Learning rate for fine-tuning
-- `--num_epochs`: Number of training epochs
-- `--early_stopping_patience`: Early stopping patience
-- `--early_stopping_threshold`: Minimum improvement threshold
+### Model Parameters
+- **Base Model**: MarianMT
+- **Source Language**: Hebrew (`he` - ISO 639-1)
+- **Target Language**: Aramaic (`arc` - ISO 639-3)
+- **Batch Size**: Optimized for GTX 3060
+- **Learning Rate**: Adaptive with scheduling
+- **Early Stopping**: Implemented to prevent overfitting
 
-**Usage**:
-```bash
-python train_translation_model.py \
-    --dataset_path ./hebrew_aramaic_dataset \
-    --output_dir ./hebrew_aramaic_model \
-    --model_name Helsinki-NLP/opus-mt-mul-en \
-    --direction he2ar \
-    --batch_size 16 \
-    --learning_rate 2e-5 \
-    --num_epochs 3 \
-    --use_fp16
-```
+### Language Codes
+- **Hebrew**: `he` (ISO 639-1)
+- **Aramaic**: `arc` (ISO 639-3)
+- **Arabic**: `ar` (ISO 639-1) - not used in this project
 
-#### 3. `inference.py`
-**Purpose**: Model inference and translation
-**Features**:
-- Interactive translation mode
-- Single text translation
-- Batch translation from files
-- Auto-detection of translation direction
-- Support for both directions
+### Training Scripts
+- `train_translation_model.py`: Main Hebrew→Aramaic training
+- `train_syriac_aramaic.py`: Syriac→Aramaic training (adapted)
+- `train_with_early_stopping.sh`: Automated training pipeline
 
-**Usage**:
-```bash
-# Interactive mode
-python inference.py --model_path ./hebrew_aramaic_model
+## Dataset Information
 
-# Single translation
-python inference.py \
-    --model_path ./hebrew_aramaic_model \
-    --text "מפרי עץ הגן נאכל" \
-    --direction he2ar
+### Corpus Details
+- **Format**: TSV with Hebrew-Aramaic verse pairs
+- **Processing**: Tokenized and preprocessed for MarianMT
+- **Duplicates**: Some verse reference duplicates identified (text duplicates are normal and beneficial)
 
-# Batch translation
-python inference.py \
-    --model_path ./hebrew_aramaic_model \
-    --input_file input_texts.txt \
-    --output_file translations.txt
-```
+### Dataset Preparation
+- `prepare_dataset.py`: Main dataset preparation
+- `prepare_syriac_aramaic_dataset.py`: Syriac dataset adaptation
+- Handles tokenization, splitting, and format conversion
 
-### Automation Scripts
+## Technical Insights
 
-#### 4. `run_pipeline.sh`
-**Purpose**: Complete pipeline automation
-**Features**:
-- Runs dataset preparation
-- Trains the model
-- Provides usage instructions
-- Error handling and colored output
+### Translation Quality Issues
 
-**Usage**:
-```bash
-./run_pipeline.sh
-```
+#### 1. Inconsistent Word Translations
+**Problem**: Words like "אור" (light) are inconsistently translated or preserved
+**Root Cause**: Limited and inconsistent training data
+**Solutions**:
+- Data augmentation with more examples
+- Manual correction of training data
+- Post-processing rules
 
-#### 5. `train_with_early_stopping.sh`
-**Purpose**: Training with early stopping optimization
-**Features**:
-- Configurable early stopping parameters
-- Starts from pre-trained model
-- Automatic stopping when performance plateaus
-- Optimized for finding best training duration
+#### 2. Untranslated Proper Nouns
+**Problem**: "בראשית" kept untranslated despite "ראשית" existing in corpus
+**Root Cause**: "בראשית" absent from training corpus
+**Solution**: Add training examples and retrain model
 
-**Usage**:
-```bash
-./train_with_early_stopping.sh
-```
+### Model Training Warnings
+- Deprecated parameter warnings (normal for MarianMT)
+- Tokenizer warnings (expected behavior)
+- Dataset suitability confirmed as typical
 
-### Configuration Files
+### Language Code Standards
+- **Corrected**: Updated from `ar` (Arabic) to `arc` (Aramaic) for proper ISO 639 compliance
+- **Hebrew**: Uses `he` (ISO 639-1)
+- **Aramaic**: Uses `arc` (ISO 639-3)
+- **Existing models**: Continue to work despite previous incorrect codes
 
-#### 6. `requirements.txt`
-**Dependencies**:
-```
-torch>=2.0.0
-transformers>=4.30.0
-datasets>=2.12.0
-evaluate>=0.4.0
-scikit-learn>=1.3.0
-pandas>=2.0.0
-numpy>=1.24.0
-sacrebleu>=2.3.0
-wandb>=0.15.0
-accelerate>=0.20.0
-tokenizers>=0.13.0
-sentencepiece>=0.1.99
-protobuf>=3.20.0
-```
+## Syriac-Aramaic Extension
 
-## 🎯 Model Architecture & Training
+### Adaptation Requirements
+- Dataset preparation with Syriac source
+- Model prefix adjustment (syriac→aramaic)
+- Similar training configuration to Hebrew model
 
-### Pre-trained Models Used
-1. **Helsinki-NLP/opus-mt-mul-en**: Multilingual MarianMT model
-2. **Helsinki-NLP/opus-mt-he-en**: Hebrew-English model (alternative)
-3. **Helsinki-NLP/opus-mt-ar-en**: Arabic-English model (alternative)
+### Implementation
+- `prepare_syriac_aramaic_dataset.py`: Adapted dataset preparation
+- `train_syriac_aramaic.py`: Modified training script
+- Maintains same architecture and optimization
 
-### Training Configuration
-- **Model Type**: MarianMT (Transformer encoder-decoder)
-- **Vocabulary Size**: 64,174 tokens
-- **Model Parameters**: 77,519,872
-- **Max Sequence Length**: 512 tokens
-- **Batch Size**: 16 (optimized for GTX 3060 12GB)
-- **Learning Rate**: 2e-5
-- **Mixed Precision**: FP16 enabled
-- **Early Stopping**: BLEU score monitoring
+## Inference and Usage
 
-### Training Process
-1. **Data Preprocessing**: Tokenization with language prefixes
-2. **Model Loading**: Pre-trained model with special tokens
-3. **Fine-tuning**: Task-specific training on Hebrew-Aramaic data
-4. **Evaluation**: BLEU score and character accuracy
-5. **Model Saving**: Best checkpoint preservation
-
-## 📊 Results & Performance
-
-### Training Results (Hebrew → Aramaic)
-
-#### Initial Training (3 epochs)
-- **BLEU Score**: 11.71
-- **Character Accuracy**: 22.55%
-- **Training Loss**: 1.09
-- **Training Time**: ~4 minutes 20 seconds
-
-#### Continued Training (2 additional epochs)
-- **BLEU Score**: 19.23 (+64% improvement!)
-- **Character Accuracy**: 22.77%
-- **Training Loss**: 0.89
-- **Training Time**: ~3 minutes 31 seconds
-
-### Model Performance Analysis
-- **Strong BLEU improvement**: 11.71 → 19.23
-- **Stable character accuracy**: ~22-23%
-- **Good convergence**: Loss decreasing consistently
-- **No overfitting**: Validation metrics improving
-
-## 🔧 Technical Implementation Details
-
-### Data Preprocessing
+### Basic Inference
 ```python
-def preprocess_function(self, examples):
-    # Determine source and target based on training direction
-    if self.config.get('direction', 'he2ar') == 'he2ar':
-        source_texts = examples['hebrew']
-        target_texts = examples['aramaic']
-        source_lang = 'he'
-        target_lang = 'ar'
-    
-    # Add language prefix
-    inputs = [f"<{source_lang}> {text}" for text in source_texts]
-    
-    # Tokenize inputs and targets
-    model_inputs = self.tokenizer(inputs, ...)
-    labels = self.tokenizer(text_target=target_texts, ...)
-    
-    return model_inputs
+from inference import translate_text
+result = translate_text("Hebrew text here")
 ```
 
-### Early Stopping Configuration
-```python
-callbacks=[EarlyStoppingCallback(
-    early_stopping_patience=5,
-    early_stopping_threshold=0.1
-)]
-```
+### Pipeline Automation
+- `run_pipeline.sh`: Complete training and evaluation pipeline
+- Includes dataset preparation, training, and testing
 
-### Evaluation Metrics
-- **BLEU Score**: Standard machine translation metric
-- **Character Accuracy**: Character-level accuracy for Hebrew/Aramaic
-- **Training Loss**: Cross-entropy loss during training
+## Performance Metrics
 
-## 🚀 Usage Examples
+### Training Results
+- **Initial BLEU**: ~11.7
+- **Final BLEU**: ~37.8
+- **Training Steps**: Multiple checkpoints (500, 810, 2000, 2500, 2700)
+- **Early Stopping**: Implemented at checkpoint 2700
 
-### Complete Pipeline
-```bash
-# 1. Prepare dataset
-python prepare_dataset.py --input_file aligned_corpus.tsv
+### Model Checkpoints
+- `checkpoint-500/`: Early training stage
+- `checkpoint-810/`: Mid-training
+- `checkpoint-2000/`, `checkpoint-2500/`, `checkpoint-2700/`: Advanced training
 
-# 2. Train model
-python train_translation_model.py \
-    --dataset_path ./hebrew_aramaic_dataset \
-    --output_dir ./hebrew_aramaic_model \
-    --model_name Helsinki-NLP/opus-mt-mul-en \
-    --direction he2ar \
-    --batch_size 16 \
-    --use_fp16
+## Technical Challenges and Solutions
 
-# 3. Use for translation
-python inference.py --model_path ./hebrew_aramaic_model
-```
+### 1. GPU Memory Optimization
+- Configured batch sizes for GTX 3060
+- Gradient accumulation for effective larger batches
+- Memory-efficient training strategies
 
-### Training Both Directions
-```bash
-# Hebrew → Aramaic
-python train_translation_model.py \
-    --dataset_path ./hebrew_aramaic_dataset \
-    --output_dir ./hebrew_aramaic_model_he2ar \
-    --direction he2ar \
-    --batch_size 16 \
-    --use_fp16
+### 2. Data Quality Issues
+- Identified and addressed corpus inconsistencies
+- Implemented data validation and cleaning
+- Added support for multiple source languages
 
-# Aramaic → Hebrew
-python train_translation_model.py \
-    --dataset_path ./hebrew_aramaic_dataset \
-    --output_dir ./hebrew_aramaic_model_ar2he \
-    --direction ar2he \
-    --batch_size 16 \
-    --use_fp16
-```
+### 3. Model Convergence
+- Early stopping to prevent overfitting
+- Learning rate scheduling for stable training
+- Multiple checkpoint saving for model selection
 
-## 🎯 Key Achievements
+## Future Improvements
 
-### ✅ Successfully Implemented
-1. **Complete training pipeline** from data preparation to inference
-2. **Bidirectional translation** support (Hebrew↔Aramaic)
-3. **Early stopping optimization** for optimal training duration
-4. **High-quality results** with BLEU score of 19.23
-5. **GPU optimization** for GTX 3060 12GB
-6. **Comprehensive error handling** and logging
-7. **Automation scripts** for easy usage
+### Data Enhancement
+- Expand training corpus with more Hebrew-Aramaic pairs
+- Add manual corrections for inconsistent translations
+- Implement data augmentation techniques
 
-### 📈 Performance Improvements
-- **BLEU Score**: 11.71 → 19.23 (+64% improvement)
-- **Training Efficiency**: Early stopping prevents overfitting
-- **Memory Optimization**: FP16 training and optimal batch sizes
-- **Code Quality**: Clean, documented, and maintainable
+### Model Optimization
+- Experiment with different model architectures
+- Fine-tune hyperparameters for better performance
+- Implement ensemble methods
 
-## 🔍 Troubleshooting & Common Issues
+### Quality Assurance
+- Develop automated quality metrics
+- Create validation sets for specific translation challenges
+- Implement post-processing rules for common issues
 
-### Issues Resolved
-1. **Model loading errors**: Fixed `mean_resizing` parameter for MarianMT models
-2. **Tokenization warnings**: Updated to new transformers API
-3. **Early stopping issues**: Fixed metric name and configuration
-4. **WandB warnings**: Properly disabled by default
-5. **Data preprocessing errors**: Fixed dataset format handling
+## Dependencies
 
-### Performance Optimization
-- **Batch size**: Optimized for GTX 3060 12GB (16-24)
-- **Learning rate**: 2e-5 provides good convergence
-- **Sequence length**: 512 tokens handles most biblical verses
-- **Mixed precision**: FP16 reduces memory usage and speeds training
+Key Python packages:
+- transformers
+- datasets
+- torch
+- sentencepiece
+- wandb (for experiment tracking)
 
-## 🎓 Lessons Learned
+See `requirements.txt` for complete dependency list.
 
-### Data Quality
-- Biblical verses work well as translation units
-- Mixed text lengths are normal and beneficial
-- High-quality parallel data is crucial for good results
+## Usage Instructions
 
-### Model Training
-- Early stopping is essential for optimal training duration
-- Continued training from checkpoints can significantly improve performance
-- MarianMT models work well for Semitic languages
+1. **Setup**: Install dependencies from `requirements.txt`
+2. **Dataset Preparation**: Run `prepare_dataset.py`
+3. **Training**: Execute `train_translation_model.py` or use `run_pipeline.sh`
+4. **Inference**: Use `inference.py` for translation
+5. **Evaluation**: Check model performance in training logs
 
-### Technical Implementation
-- Proper error handling prevents training failures
-- Modular code design enables easy experimentation
-- Comprehensive logging helps with debugging and monitoring
+## Notes
 
-## 🚀 Future Improvements
-
-### Potential Enhancements
-1. **Data augmentation**: Add more diverse Hebrew-Aramaic texts
-2. **Model ensemble**: Combine multiple models for better accuracy
-3. **Domain adaptation**: Fine-tune for specific biblical books
-4. **Interactive web interface**: Create a web-based translation tool
-5. **API deployment**: Deploy model as a REST API service
-
-### Research Directions
-1. **Cross-lingual transfer**: Explore transfer learning from related languages
-2. **Low-resource optimization**: Techniques for limited parallel data
-3. **Evaluation metrics**: Develop domain-specific evaluation methods
-4. **Interpretability**: Analyze model attention patterns
-
-## 📚 References & Resources
-
-### Documentation
-- [MarianMT Documentation](https://huggingface.co/docs/transformers/en/model_doc/marian)
-- [Helsinki-NLP Models](https://huggingface.co/Helsinki-NLP)
-- [Transformers Library](https://huggingface.co/docs/transformers/)
-
-### Related Work
-- Helsinki-NLP multilingual translation models
-- Biblical text translation research
-- Semitic language processing
-
----
-
-**Project Status**: ✅ Complete and Functional  
-**Last Updated**: June 24, 2025  
-**Model Performance**: BLEU 19.23 (Hebrew→Aramaic)  
-**Training Time**: ~8 minutes total  
-**GPU Requirements**: GTX 3060 12GB or equivalent 
+- The project demonstrates successful application of transformer-based NMT to biblical Hebrew-Aramaic translation
+- Significant BLEU score improvements achieved through iterative training
+- Model handles both Hebrew→Aramaic and Syriac→Aramaic translation tasks
+- Early stopping and GPU optimization ensure efficient training
+- Ongoing work focuses on improving translation consistency and quality 

@@ -12,7 +12,7 @@ echo ""
 DATASET_DIR="./hebrew_aramaic_dataset"
 MODEL_DIR="./hebrew_aramaic_model_early_stopping"
 BASE_MODEL="Helsinki-NLP/opus-mt-mul-en"  # Start from the original pre-trained model
-DIRECTION="he2ar"
+DIRECTION="he2arc"
 BATCH_SIZE=16
 LEARNING_RATE=2e-5
 NUM_EPOCHS=10  # Train for more epochs, let early stopping decide when to stop

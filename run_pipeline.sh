@@ -13,7 +13,7 @@ INPUT_FILE="aligned_corpus.tsv"
 DATASET_DIR="./hebrew_aramaic_dataset"
 MODEL_DIR="./hebrew_aramaic_model"
 MODEL_NAME="Helsinki-NLP/opus-mt-mul-en"
-DIRECTION="he2ar"
+DIRECTION="he2arc"
 BATCH_SIZE=24  # Increased for GTX 3060 12GB
 LEARNING_RATE=2e-5
 NUM_EPOCHS=3
@@ -98,7 +98,7 @@ echo "Interactive mode:"
 echo "  python inference.py --model_path $MODEL_DIR"
 echo ""
 echo "Single translation:"
-echo "  python inference.py --model_path $MODEL_DIR --text 'מפרי עץ הגן נאכל' --direction he2ar"
+echo "  python inference.py --model_path $MODEL_DIR --text 'מפרי עץ הגן נאכל' --direction he2arc"
 echo ""
 
 print_status "Pipeline completed successfully!"
