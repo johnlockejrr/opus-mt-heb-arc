@@ -68,7 +68,7 @@ python train_translation_model.py \
     --dataset_path ./hebrew_aramaic_dataset \
     --output_dir ./hebrew_aramaic_model \
     --model_name Helsinki-NLP/opus-mt-mul-en \
-    --direction he2ar \
+    --direction he2arc \
     --batch_size 8 \
     --learning_rate 2e-5 \
     --num_epochs 3 \
@@ -81,7 +81,7 @@ python train_translation_model.py \
   - `Helsinki-NLP/opus-mt-mul-en` (multilingual)
   - `Helsinki-NLP/opus-mt-he-en` (Hebrew-English)
   - `Helsinki-NLP/opus-mt-ar-en` (Arabic-English)
-- `--direction`: Translation direction (`he2ar` or `ar2he`)
+- `--direction`: Translation direction (`he2arc` or `arc2he`)
 - `--batch_size`: Training batch size (adjust based on GPU memory)
 - `--learning_rate`: Learning rate for fine-tuning
 - `--num_epochs`: Number of training epochs
@@ -111,7 +111,7 @@ python inference.py --model_path ./hebrew_aramaic_model
 python inference.py \
     --model_path ./hebrew_aramaic_model \
     --text "מפרי עץ הגן נאכל" \
-    --direction he2ar
+    --direction he2arc
 ```
 
 #### Batch Translation:
@@ -121,7 +121,7 @@ python inference.py \
     --model_path ./hebrew_aramaic_model \
     --input_file input_texts.txt \
     --output_file translations.txt \
-    --direction he2ar
+    --direction he2arc
 ```
 
 ## Model Recommendations
