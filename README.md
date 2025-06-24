@@ -227,4 +227,23 @@ This project is provided as-is for research and educational purposes.
 
 - [MarianMT Documentation](https://huggingface.co/docs/transformers/en/model_doc/marian)
 - [Helsinki-NLP Models](https://huggingface.co/Helsinki-NLP)
-- [Transformers Library](https://huggingface.co/docs/transformers/) 
+- [Transformers Library](https://huggingface.co/docs/transformers/)
+
+## Language Codes
+
+- **Hebrew**: `he` (ISO 639-1)
+- **Aramaic**: `arc` (ISO 639-3)
+- **Syriac**: `syr` (ISO 639-2)
+- **Arabic**: `ar` (ISO 639-1, not used here)
+
+> **Note:** Previous versions used `ar` for Aramaic, which is the code for Arabic. All scripts and models now use the correct `arc` code for Aramaic for standards compliance.
+
+## Supported Translation Directions
+
+- Hebrew (`he`) → Aramaic (`arc`)
+- Aramaic (`arc`) → Hebrew (`he`)
+- Syriac (`syr`) → Aramaic (`arc`) *(see Syriac-Aramaic extension)*
+
+## Syriac-Aramaic Extension
+
+This project now includes scripts and documentation for training a Syriac→Aramaic translation model. See `SYRIAC_ARAMAIC_EXTENSION.md` for details. 
